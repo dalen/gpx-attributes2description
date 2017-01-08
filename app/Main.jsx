@@ -1,7 +1,9 @@
-import React from 'react';
-import { Well, Button, ProgressBar } from 'react-bootstrap';
+/* eslint import/no-extraneous-dependencies: ["error", { "devDependencies": true }] */
 import { remote } from 'electron';
+import React from 'react';
+import { Alert, Well, Button, ProgressBar } from 'react-bootstrap';
 import * as fs from 'fs';
+import * as path from 'path';
 import FileDrop from 'react-file-drop';
 import { parseString, Builder } from 'xml2js';
 
@@ -26,32 +28,51 @@ export default class Main extends React.Component {
   openFiles(files) {
     files.forEach((fileName) => {
       fs.readFile(fileName, (err, contents) => {
-        if (err) throw err;
+        if (err) {
+          this.setState({ [fileName]: {
+            state: 'error',
+            message: `Failed to open file: ${err.message}`,
+          } });
+          throw err;
+        }
         this.processXML(fileName, contents);
       });
-      this.setState({ [fileName]: 'in progress' });
+      this.setState({ [fileName]: { state: 'in progress' } });
     });
   }
 
   processXML(fileName, xml) {
     parseString(xml, (err, result) => {
-      if (err) throw err;
-      result.gpx.wpt.forEach((wpt) => {
-        wpt['groundspeak:cache'].forEach((cache) => {
-          if (cache['groundspeak:attributes'] &&
-              cache['groundspeak:attributes'][0] &&
-              cache['groundspeak:attributes'][0]['groundspeak:attribute']) {
-            const attrs = cache['groundspeak:attributes'][0]['groundspeak:attribute'].map(attribute => attribute._);
-            const shortDesc = wpt['groundspeak:cache'][0]['groundspeak:short_description'][0];
-            if (shortDesc._) {
-              shortDesc._ = `${attrs.join(', ')}. ${shortDesc._}`;
-            } else {
-              shortDesc._ = attrs.join(', ');
+      if (err) {
+        this.setState({ [fileName]: {
+          state: 'error',
+          message: `Failed to parse file, is it a GPX file?: ${err.message}`,
+        } });
+        throw err;
+      }
+      try {
+        result.gpx.wpt.forEach((wpt) => {
+          wpt['groundspeak:cache'].forEach((cache) => {
+            if (cache['groundspeak:attributes'] &&
+                cache['groundspeak:attributes'][0] &&
+                cache['groundspeak:attributes'][0]['groundspeak:attribute']) {
+              const attrs = cache['groundspeak:attributes'][0]['groundspeak:attribute'].map(attribute => attribute._);
+              const shortDesc = wpt['groundspeak:cache'][0]['groundspeak:short_description'][0];
+              if (shortDesc._) {
+                shortDesc._ = `${attrs.join(', ')}. ${shortDesc._}`;
+              } else {
+                shortDesc._ = attrs.join(', ');
+              }
             }
-          }
+          });
         });
-      });
-      this.saveXML(fileName, result);
+        this.saveXML(fileName, result);
+      } catch (error) {
+        this.setState({ [fileName]: {
+          state: 'error',
+          message: 'Failed to parse file, maybe it is the wpts file?',
+        } });
+      }
     });
   }
 
@@ -64,8 +85,14 @@ export default class Main extends React.Component {
     const extensionIndex = fileName.lastIndexOf('.');
     const newFileName = `${fileName.slice(0, extensionIndex)} att${fileName.slice(extensionIndex)}`;
     fs.writeFile(newFileName, xmlString, (err) => {
-      if (err) throw err;
-      this.setState({ [fileName]: 'finished' });
+      if (err) {
+        this.setState({ [fileName]: {
+          state: 'error',
+          message: `Failed to save file: ${err.message}`,
+        } });
+        throw err;
+      }
+      this.setState({ [fileName]: { state: 'finished' } });
     });
   }
 
@@ -77,10 +104,14 @@ export default class Main extends React.Component {
           <p><Button bsStyle="primary" onClick={this.openFileDialog}>Open</Button></p>
         </Well>
         {
-          Object.getOwnPropertyNames(this.state).map((fileName) => {
-            const fileState = this.state[fileName];
-            if (fileState === 'in progress') {
+          Object.getOwnPropertyNames(this.state).reverse().map((filePath) => {
+            const file = this.state[filePath];
+            const fileName = path.basename(filePath);
+
+            if (file.state === 'in progress') {
               return (<ProgressBar label={fileName} active now={100} key={fileName} />);
+            } else if (file.state === 'error') {
+              return (<Alert bsStyle="danger"><strong>{fileName}</strong>:<br />{file.message}</Alert>);
             }
             return (<ProgressBar label={fileName} bsStyle="success" now={100} key={fileName} />);
           })
