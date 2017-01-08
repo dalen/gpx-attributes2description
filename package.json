@@ -5,7 +5,7 @@
   "bugs": {
     "url": "https://github.com/dalen/gpx-attributes2description/issues"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add attributes to short description.",
   "main": "bootstrap.js",
   "scripts": {
