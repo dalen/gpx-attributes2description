@@ -9,7 +9,10 @@ export default class Main extends React.Component {
   state = {}
 
   openFileDialog = () => {
-    this.openFiles(remote.dialog.showOpenDialog({ properties: ['openFile'] }));
+    this.openFiles(remote.dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'GPX Files', extensions: ['gpx'] }],
+    }));
   }
 
   dropFiles = (fileList) => {
