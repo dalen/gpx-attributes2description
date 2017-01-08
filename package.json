@@ -1,5 +1,5 @@
 {
-  "name": "geocache-description",
+  "name": "gpx-attributes2description",
   "version": "1.0.0",
   "description": "Add attributes to short description.",
   "main": "bootstrap.js",
