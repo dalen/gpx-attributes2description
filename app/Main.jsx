@@ -2,6 +2,7 @@ import React from 'react';
 import { Well, Button, ProgressBar } from 'react-bootstrap';
 import { remote } from 'electron';
 import * as fs from 'fs';
+import FileDrop from 'react-file-drop';
 import { parseString, Builder } from 'xml2js';
 
 export default class Main extends React.Component {
@@ -11,9 +12,12 @@ export default class Main extends React.Component {
     this.openFiles(remote.dialog.showOpenDialog({ properties: ['openFile'] }));
   }
 
-  dropFile = (event) => {
-    event.preventDefault();
-    this.openFiles(event.dataTransfer.files);
+  dropFiles = (fileList) => {
+    const files = [];
+    for (let i = 0; i < fileList.length; i += 1) {
+      files.push(fileList.item(i).path);
+    }
+    this.openFiles(files);
   }
 
   openFiles(files) {
@@ -54,7 +58,9 @@ export default class Main extends React.Component {
       allowSurrogateChars: true,
     });
     const xmlString = builder.buildObject(xmlObject);
-    fs.writeFile(`${fileName}.attr`, xmlString, (err) => {
+    const extensionIndex = fileName.lastIndexOf('.');
+    const newFileName = `${fileName.slice(0, extensionIndex)} att${fileName.slice(extensionIndex)}`;
+    fs.writeFile(newFileName, xmlString, (err) => {
       if (err) throw err;
       this.setState({ [fileName]: 'finished' });
     });
@@ -62,9 +68,9 @@ export default class Main extends React.Component {
 
   render() {
     return (
-      <div>
-        <Well onDrop={this.dropFile}>
-          <p>Open file</p>
+      <FileDrop targetAlwaysVisible frame={window} onDrop={this.dropFiles}>
+        <Well>
+          <p>Click open or drag files here</p>
           <p><Button bsStyle="primary" onClick={this.openFileDialog}>Open</Button></p>
         </Well>
         {
@@ -76,7 +82,7 @@ export default class Main extends React.Component {
             return (<ProgressBar label={fileName} bsStyle="success" now={100} key={fileName} />);
           })
         }
-      </div>
+      </FileDrop>
     );
   }
 }
