@@ -5,12 +5,12 @@
   "bugs": {
     "url": "https://github.com/dalen/gpx-attributes2description/issues"
   },
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Add attributes to short description.",
   "main": "bootstrap.js",
   "scripts": {
     "start": "electron .",
-    "lint": "find src -name '*.js' -or -name '*.jsx' | xargs node_modules/.bin/eslint",
+    "lint": "eslint app",
     "flow": "flow",
     "pack": "build --dir",
     "dist": "build"
@@ -22,28 +22,29 @@
   "license": "MIT",
   "dependencies": {
     "babel-core": "^6.20.0",
-    "babel-eslint": "^7.1.1",
-    "babel-loader": "^6.2.9",
+    "babel-loader": "^7.1.2",
     "babel-plugin-transform-class-properties": "^6.19.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "babel-register": "^6.18.0",
     "bootstrap": "^3.3.7",
-    "react": "^15.4.2",
-    "react-bootstrap": "^0.30.7",
-    "react-dom": "^15.4.2",
+    "react": "^16.2.0",
+    "react-bootstrap": "^0.31.5",
+    "react-dom": "^16.2.0",
     "react-file-drop": "^0.1.8",
     "xml2js": "^0.4.17"
   },
   "devDependencies": {
+    "babel-eslint": "^8.0.3",
     "electron": "^1.4.12",
-    "electron-builder": "^10.17.3",
-    "eslint": "^3.12.0",
-    "eslint-config-airbnb": "^13.0.0",
+    "electron-builder": "^19.49.2",
+    "eslint": "^4.13.1",
+    "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^2.2.3",
-    "eslint-plugin-react": "^6.8.0",
-    "flow-bin": "^0.37.4"
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.5.1",
+    "flow-bin": "^0.61.0",
+    "webpack": "^3.10.0"
   },
   "build": {
     "mac": {
